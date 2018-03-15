@@ -23,7 +23,7 @@ public final class MovieJsonUtils {
     private static final String IMAGE_SIZE_W342 = "w342";
     private static final String RUNTIME = "runtime";
 
-    private final static Uri BASE_IMAGE_URI = Uri.parse(BASE_IMAGE_URL).buildUpon()
+    public final static Uri BASE_IMAGE_URI = Uri.parse(BASE_IMAGE_URL).buildUpon()
             .appendPath(IMAGE_SIZE_W342).build();
 
     public static List<Movie> getSimpleMovieStringsFromJson(String movieJsonStr)
@@ -44,6 +44,8 @@ public final class MovieJsonUtils {
             double voteAverage = movieObject.getDouble(VOTE_AVERAGE);
             String releaseDate = movieObject.getString(RELEASE_DATE);
             String runtime = getMovieRuntimeById(id);
+
+
 
             Movie movie = new Movie(
                     id,

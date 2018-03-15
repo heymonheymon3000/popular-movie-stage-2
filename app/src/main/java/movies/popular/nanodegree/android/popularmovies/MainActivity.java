@@ -2,6 +2,8 @@ package movies.popular.nanodegree.android.popularmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +19,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
+import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieDbHelper;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
 import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
@@ -24,9 +28,11 @@ import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 public class MainActivity extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         MovieAdapter.MovieAdapterOnClickListener {
+    private final String TAG = MainActivity.class.getSimpleName();
 
     private MovieAdapter mMovieAdapter;
     private RecyclerView mRecyclerView;
+    private SQLiteDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
             loadMovieData();
@@ -106,29 +115,67 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
+    public Cursor getAllFavoriteMovies() {
+        return mDb.query(
+                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
     public class FetchMovieData extends AsyncTask<String, Void, List<Movie>> {
         private String activityTitle = "Popular Movies";
 
         @Override
         protected List<Movie> doInBackground(String... params) {
             URL movieRequestUrl;
+            List<Movie> movieList;
             SharedPreferences sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(getBaseContext());
             String sortOrder =
                     sharedPreferences.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_default));
 
-            List<Movie> movieList = null;
-
-            movieRequestUrl = NetworkUtils.buildUrlBySortOrder(sortOrder);
-
             if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value))) {
                 activityTitle = "Popular Movies";
+                movieRequestUrl = NetworkUtils.buildPopularMovieUrl();
+                movieList = getMovieListFromUrl(movieRequestUrl);
             } else if(sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
                 activityTitle = "Top Rated Movies";
+                movieRequestUrl = NetworkUtils.buildTopRatedMovieUrl();
+                movieList = getMovieListFromUrl(movieRequestUrl);
             } else {
                 activityTitle = "Favorite Movies";
+                Cursor movieCursor = getAllFavoriteMovies();
+                movieList = getMovieListFromCursor(movieCursor);
             }
 
+            return movieList;
+        }
+
+        private List<Movie> getMovieListFromCursor(Cursor movieCursor) {
+            List<Movie> movieList = new ArrayList<>();
+
+            for(int i = 0; i < movieCursor.getCount(); i++) {
+                movieCursor.moveToPosition(i);
+                Movie movie = new Movie(
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID)),
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE)),
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL)),
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW)),
+                    movieCursor.getDouble(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE)),
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE)),
+                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME)));
+                movieList.add(movie);
+            }
+            return movieList;
+        }
+
+        private List<Movie> getMovieListFromUrl(URL movieRequestUrl) {
+            List<Movie> movieList = new ArrayList<>();
             try {
                 String jsonMovieResponse = NetworkUtils
                         .getResponseFromHttpUrl(movieRequestUrl);

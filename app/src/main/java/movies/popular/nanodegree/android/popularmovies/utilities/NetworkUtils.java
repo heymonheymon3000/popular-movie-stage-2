@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 import movies.popular.nanodegree.android.popularmovies.BuildConfig;
-import movies.popular.nanodegree.android.popularmovies.R;
 
 public final class NetworkUtils {
     private static final String MOVIE_POPULAR_BASE_URL =
@@ -22,26 +21,51 @@ public final class NetworkUtils {
     private static final String MOVIE_REVIEW_BASE_URL =
             "http://api.themoviedb.org/3/movie/{id}/reviews";
     private static final String API_KEY_PARAM = "api_key";
+    private static final String YOUTUBE_BASE_URL =
+            "https://www.youtube.com/watch";
+    private static final String YOUTUBE_KEY = "v";
 
-    public static URL buildUrlBySortOrder(String sortOrder) {
+    public static URL buildYouTubeUrl(String key) {
         Uri builtUri;
         URL url = null;
 
-        if(sortOrder.equals(R.string.pref_sort_order_top_rated_value)) {
-            builtUri = Uri.parse(MOVIE_TOP_RATED_BASE_URL).buildUpon()
-                    .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
-                    .build();
-        } else if(sortOrder.equals(R.string.pref_sort_order_popular_value)) {
-            builtUri = Uri.parse(MOVIE_POPULAR_BASE_URL).buildUpon()
-                    .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
-                    .build();
-        } else {
-            // TODO: handle favorites
-            builtUri = Uri.parse(MOVIE_POPULAR_BASE_URL).buildUpon()
-                    .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
-                    .build();
+        builtUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
+                .appendQueryParameter(YOUTUBE_KEY, key)
+                .build();
+
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
 
+        return url;
+    }
+
+    public static URL buildPopularMovieUrl() {
+        Uri builtUri;
+        URL url = null;
+
+        builtUri = Uri.parse(MOVIE_POPULAR_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                .build();
+
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildTopRatedMovieUrl() {
+        Uri builtUri;
+        URL url = null;
+
+        builtUri = Uri.parse(MOVIE_TOP_RATED_BASE_URL).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                .build();
         try {
             url = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
