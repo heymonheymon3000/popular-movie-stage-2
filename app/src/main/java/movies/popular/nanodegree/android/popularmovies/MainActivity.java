@@ -102,12 +102,12 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(Movie movie) {
         Intent intent = new Intent(getBaseContext(), DetailActivity.class)
-         .putExtra("movies.popular.nanodegree.android.popularmovies.model.Movie", movie);
+                .putExtra("movies.popular.nanodegree.android.popularmovies.model.Movie", movie);
         startActivity(intent);
     }
 
     public class FetchMovieData extends AsyncTask<String, Void, List<Movie>> {
-        private String activityTitle;
+        private String activityTitle = "Popular Movies";
 
         @Override
         protected List<Movie> doInBackground(String... params) {
@@ -119,12 +119,14 @@ public class MainActivity extends AppCompatActivity implements
 
             List<Movie> movieList = null;
 
-            movieRequestUrl = NetworkUtils.buildUrl(sortOrder);
+            movieRequestUrl = NetworkUtils.buildUrlBySortOrder(sortOrder);
 
             if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value))) {
                 activityTitle = "Popular Movies";
-            } else {
+            } else if(sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
                 activityTitle = "Top Rated Movies";
+            } else {
+                activityTitle = "Favorite Movies";
             }
 
             try {

@@ -14,14 +14,12 @@
             android:id="@+id/detail_movie_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
+            android:background="@color/colorPrimary"
             android:padding="24dp"
             android:textColor="@color/detailTitleColor"
-            android:textStyle="bold"
             android:textSize="24sp"
             android:singleLine="false"
-            android:minHeight="90dp"
-            tools:text="Lord of the Rings"/>
+            android:minHeight="90dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,9 +56,26 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
+                    android:id="@+id/detail_movie_runtime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
                     android:id="@+id/detail_movie_vote_average"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
+
+                <Button
+                    android:id="@+id/detail_movie_mark_as_favorite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorAccent"
+                    android:text="@string/action_favorite_movie"
+                    android:textSize="8sp"
+                    android:minHeight="24dp"
+                    android:minWidth="64dp"
+                    android:textColor="#86A9A5"
+                    android:onClick="onClickMarkAsFavorite"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -71,6 +86,15 @@
             android:layout_height="wrap_content"
             android:padding="16dp"/>
 
+        <View style="@style/Divider"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/trailers_label"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 
 </ScrollView>

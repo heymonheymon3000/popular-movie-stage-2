@@ -4,19 +4,27 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Movie implements Parcelable {
+    private String id;
     private String title;
     private String thumbnail;
     private String overview;
     private double voteAverage;
     private String releaseDate;
+    private String runtime;
 
-    public Movie(String title, String thumbnail, String overview, double voteAverage,
-                 String releaseDate) {
+    public Movie(String id, String title, String thumbnail, String overview, double voteAverage,
+                 String releaseDate, String runtime) {
+        this.id = id;
         this.title = title;
         this.thumbnail = thumbnail;
         this.overview = overview;
         this.voteAverage = voteAverage;
         this.releaseDate = releaseDate;
+        this.runtime = runtime+"min";
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTitle() {
@@ -43,21 +51,29 @@ public class Movie implements Parcelable {
         return releaseDate;
     }
 
+    public String getRuntime() {
+        return runtime;
+    }
+
     private Movie(Parcel in) {
+        this.id = in.readString();
         this.title = in.readString();
         this.thumbnail = in.readString();
         this.overview = in.readString();
         this.voteAverage = in.readDouble();
         this.releaseDate = in.readString();
+        this.runtime = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(id);
         parcel.writeString(title);
         parcel.writeString(thumbnail);
         parcel.writeString(overview);
         parcel.writeDouble(voteAverage);
         parcel.writeString(releaseDate);
+        parcel.writeString(runtime);
     }
 
     @Override

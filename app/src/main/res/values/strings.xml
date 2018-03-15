@@ -7,10 +7,15 @@
     <string name="pref_sort_order_label">Sort Order</string>
     <string name="pref_sort_order_popular_label">Popular</string>
     <string name="pref_sort_order_top_rated_label">Top Rated</string>
+    <string name="pref_sort_order_favorites_label">Favorites</string>
     <string name="pref_sort_order_popular_value">popular</string>
     <string name="pref_sort_order_top_rated_value">top rated</string>
+    <string name="pref_sort_order_favorites_value">favorites</string>
+
     <string name="pref_sort_order_default">Popular</string>
     <string name="pref_sort_order_key" translatable="false">sort_order</string>
 
     <string name="thumbnail_content_description" translatable="false">This is the thumbnail of the movie</string>
+    <string name="action_favorite_movie">MARK AS\n FAVORITE</string>
+    <string name="trailers_label">Trailers:</string>
 </resources>

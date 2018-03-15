@@ -1,7 +1,6 @@
 package movies.popular.nanodegree.android.popularmovies.utilities;
 
 import android.net.Uri;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -12,15 +11,19 @@ import movies.popular.nanodegree.android.popularmovies.BuildConfig;
 import movies.popular.nanodegree.android.popularmovies.R;
 
 public final class NetworkUtils {
-    private static final String TAG = NetworkUtils.class.getSimpleName();
-
     private static final String MOVIE_POPULAR_BASE_URL =
             "http://api.themoviedb.org/3/movie/popular";
     private static final String MOVIE_TOP_RATED_BASE_URL =
             "http://api.themoviedb.org/3/movie/top_rated";
+    private static final String MOVIE_RUNTIME_BASE_URL =
+            "http://api.themoviedb.org/3/movie/{id}";
+    private static final String MOVIE_VIDEO_BASE_URL =
+            "http://api.themoviedb.org/3/movie/{id}/videos";
+    private static final String MOVIE_REVIEW_BASE_URL =
+            "http://api.themoviedb.org/3/movie/{id}/reviews";
     private static final String API_KEY_PARAM = "api_key";
 
-    public static URL buildUrl(String sortOrder) {
+    public static URL buildUrlBySortOrder(String sortOrder) {
         Uri builtUri;
         URL url = null;
 
@@ -28,11 +31,70 @@ public final class NetworkUtils {
             builtUri = Uri.parse(MOVIE_TOP_RATED_BASE_URL).buildUpon()
                     .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
                     .build();
+        } else if(sortOrder.equals(R.string.pref_sort_order_popular_value)) {
+            builtUri = Uri.parse(MOVIE_POPULAR_BASE_URL).buildUpon()
+                    .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                    .build();
         } else {
+            // TODO: handle favorites
             builtUri = Uri.parse(MOVIE_POPULAR_BASE_URL).buildUpon()
                     .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
                     .build();
         }
+
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildRuntimeUrlById(String id) {
+        Uri builtUri;
+        URL url = null;
+
+        String runtimeUrl = MOVIE_RUNTIME_BASE_URL.replace("{id}", id);
+        builtUri = Uri.parse(runtimeUrl).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                .build();
+
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildMovieVideosById(String id) {
+        Uri builtUri;
+        URL url = null;
+
+        String runtimeUrl = MOVIE_VIDEO_BASE_URL.replace("{id}", id);
+        builtUri = Uri.parse(runtimeUrl).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                .build();
+
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildMovieReviewsById(String id) {
+        Uri builtUri;
+        URL url = null;
+
+        String runtimeUrl = MOVIE_REVIEW_BASE_URL.replace("{id}", id);
+        builtUri = Uri.parse(runtimeUrl).buildUpon()
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.MOVIE_DB_API_KEY)
+                .build();
 
         try {
             url = new URL(builtUri.toString());
