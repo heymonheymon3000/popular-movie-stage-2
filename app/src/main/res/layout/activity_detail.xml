@@ -75,7 +75,7 @@
                     android:minHeight="24dp"
                     android:minWidth="64dp"
                     android:textColor="#86A9A5"
-                    android:onClick="onClickMarkAsFavorite"/>
+                    android:onClick="onClickAddFavoriteMovie"/>
             </LinearLayout>
 
         </LinearLayout>

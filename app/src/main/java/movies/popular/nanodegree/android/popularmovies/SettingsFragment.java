@@ -61,5 +61,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
                 setPreferenceSummary(preference, value);
             }
         }
+
+        getActivity().finish();
     }
 }

@@ -1,10 +1,10 @@
 package movies.popular.nanodegree.android.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
-import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieDbHelper;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
 import movies.popular.nanodegree.android.popularmovies.model.Video;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
@@ -34,7 +33,6 @@ public class DetailActivity extends AppCompatActivity {
     private TextView voteAverage;
     private TextView releaseDate;
     private TextView runtime;
-    private SQLiteDatabase mDb;
     private String id;
     private String postPath;
     private TrailerAdapter mTrailerAdapter;
@@ -52,9 +50,6 @@ public class DetailActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mTrailerAdapter);
         mRecyclerView.setLayoutManager(layoutManager);
-
-        FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
 
         Intent intent = getIntent();
         if(null != intent) {
@@ -91,7 +86,7 @@ public class DetailActivity extends AppCompatActivity {
         new FetchTrailers().execute();
     }
 
-    public void onClickMarkAsFavorite(View view) {
+    public void onClickAddFavoriteMovie(View view) {
         if(!isFavoriteStoredAlready(id)) {
             addNewFavoriteMovie();
         } else {
@@ -102,27 +97,20 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private boolean isFavoriteStoredAlready(String id) {
-        String selection = FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID + " = ?";
-        String[] selectionArgs = { id };
+        Uri uri = FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(id).build();
 
-        Cursor cursor = mDb.query(
-                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
-                null,
-                selection,
-                selectionArgs,
+        Cursor cursor = getContentResolver().query(
+                uri,
                 null,
                 null,
-                null
-        );
+                null,
+                null);
 
         return ( cursor.getCount() > 0 ) ;
     }
 
     private void addNewFavoriteMovie() {
-        if(mDb == null){
-            return;
-        }
-
         ContentValues cv = new ContentValues();
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID, id);
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE, title.getText().toString());
@@ -132,24 +120,16 @@ public class DetailActivity extends AppCompatActivity {
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, releaseDate.getText().toString());
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME, runtime.getText().toString());
 
-        try {
-            mDb.beginTransaction();
-            mDb.insert(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME, null, cv);
-            mDb.setTransactionSuccessful();
-        }
-        catch (SQLException e) {
+        Uri uri = getContentResolver().insert(FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, cv);
+        if(uri != null) {
             Toast.makeText(DetailActivity.this,
-                    "Unexpected error occurred saving favorite movie",
-                    Toast.LENGTH_SHORT).show();
-        }
-        finally {
-            mDb.endTransaction();
-            Toast.makeText(DetailActivity.this,
-                    "Added " + title.getText().toString() + " as one of your favorite movies.",
+                    "Added " + title.getText().toString() + " as one of your favorite movies.\n"+
+                    uri.toString(),
                     Toast.LENGTH_SHORT).show();
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     public class FetchTrailers extends AsyncTask<Void, Void, List<Video>> {
         @Override
         protected List<Video> doInBackground(Void... voids) {

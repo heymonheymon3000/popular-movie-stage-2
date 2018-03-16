@@ -50,9 +50,9 @@ public class TestUtil {
         try {
             db.beginTransaction();
             db.delete (FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,null,null);
-            for(ContentValues c:list){
-                db.insert(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME, null, c);
-            }
+//            for(ContentValues c:list){
+//                db.insert(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME, null, c);
+//            }
             db.setTransactionSuccessful();
         }
         catch (SQLException e) {

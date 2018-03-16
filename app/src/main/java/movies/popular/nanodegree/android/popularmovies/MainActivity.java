@@ -22,6 +22,7 @@ import java.util.List;
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieDbHelper;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
+import movies.popular.nanodegree.android.popularmovies.model.TestUtil;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
 import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements
 
         FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
+        TestUtil.insertFakeData(mDb);
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
             loadMovieData();
@@ -113,15 +115,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public Cursor getAllFavoriteMovies() {
-        return mDb.query(
-                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        try {
+            return getContentResolver().query(
+                    FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public class FetchMovieData extends AsyncTask<String, Void, List<Movie>> {
