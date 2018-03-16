@@ -41,7 +41,7 @@
                     android:paddingStart="24dp"
                     android:paddingLeft="24dp"
                     android:contentDescription="@string/thumbnail_content_description"/>
-                
+
             </LinearLayout>
 
             <LinearLayout
@@ -95,6 +95,15 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_marginTop="8dp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_trailers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp">
+        </android.support.v7.widget.RecyclerView>
+
     </LinearLayout>
 
 </ScrollView>

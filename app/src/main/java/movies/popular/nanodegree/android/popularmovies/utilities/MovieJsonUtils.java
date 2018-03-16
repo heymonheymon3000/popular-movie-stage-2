@@ -1,6 +1,8 @@
 package movies.popular.nanodegree.android.popularmovies.utilities;
 
 import android.net.Uri;
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,8 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
+import movies.popular.nanodegree.android.popularmovies.model.Review;
+import movies.popular.nanodegree.android.popularmovies.model.Video;
 
 public final class MovieJsonUtils {
+    private static final String TAG = MovieJsonUtils.class.getSimpleName();
+
     private static final String MOVIE_RESULTS = "results";
     private static final String POSTER_PATH = "poster_path";
     private static final String ID = "id";
@@ -22,6 +28,10 @@ public final class MovieJsonUtils {
     private static final String BASE_IMAGE_URL = "http://image.tmdb.org/t/p/";
     private static final String IMAGE_SIZE_W342 = "w342";
     private static final String RUNTIME = "runtime";
+    private static final String KEY = "key";
+    private static final String CONTENT = "content";
+    private static final String AUTHOR = "author";
+    private static final String NAME = "name";
 
     public final static Uri BASE_IMAGE_URI = Uri.parse(BASE_IMAGE_URL).buildUpon()
             .appendPath(IMAGE_SIZE_W342).build();
@@ -45,8 +55,6 @@ public final class MovieJsonUtils {
             String releaseDate = movieObject.getString(RELEASE_DATE);
             String runtime = getMovieRuntimeById(id);
 
-
-
             Movie movie = new Movie(
                     id,
                     title,
@@ -69,6 +77,40 @@ public final class MovieJsonUtils {
         return runtime;
     }
 
+    public static List<Review> getMovieReviewFromJson(String movieReviewJsonStr)
+            throws JSONException {
+        List<Review> reviewList = new ArrayList<>();
+        JSONObject movieReviewJson = new JSONObject(movieReviewJsonStr);
+        JSONArray jsonReviewArray = movieReviewJson.getJSONArray(MOVIE_RESULTS);
+        for (int i = 0; i < jsonReviewArray.length(); i++) {
+            JSONObject reviewObject = jsonReviewArray.getJSONObject(i);
+            String id = reviewObject.getString(ID);
+            String author = reviewObject.getString(AUTHOR);
+            String content = reviewObject.getString(CONTENT);
+
+            Review review = new Review(id, author, content);
+            reviewList.add(review);
+        }
+        return  reviewList;
+    }
+
+    public static List<Video> getMovieVideoFromJson(String movieVideoJsonStr)
+            throws JSONException {
+        List<Video> videoList = new ArrayList<>();
+        JSONObject movieVideoJson = new JSONObject(movieVideoJsonStr);
+        JSONArray jsonVideoArray = movieVideoJson.getJSONArray(MOVIE_RESULTS);
+        for (int i = 0; i < jsonVideoArray.length(); i++) {
+            JSONObject videoObject = jsonVideoArray.getJSONObject(i);
+            String id = videoObject.getString(ID);
+            String key = videoObject.getString(KEY);
+            String name = videoObject.getString(NAME);
+
+            Video video = new Video(id, key, name);
+            videoList.add(video);
+        }
+        return  videoList;
+    }
+
     private static String getMovieRuntimeById(String id) {
         String runtime = null;
         URL runtimeUrl = NetworkUtils.buildRuntimeUrlById(id);
@@ -82,5 +124,35 @@ public final class MovieJsonUtils {
         }
 
         return runtime;
+    }
+
+    private static List<Review> getMovieReviewListByMoveId(String id) {
+        List<Review> reviewList = new ArrayList<>();
+        URL reviewUrl = NetworkUtils.buildMovieReviewsByMovieId(id);
+
+        try {
+            String jsonMovieReviewResponse =
+                    NetworkUtils.getResponseFromHttpUrl(reviewUrl);
+            reviewList = getMovieReviewFromJson(jsonMovieReviewResponse);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return reviewList;
+    }
+
+    private static List<Video> getMovieVideoListByMovieId(String id) {
+        List<Video> videoList = new ArrayList<>();
+        URL videoUrl = NetworkUtils.buildMovieVideosByMovieId(id);
+
+        try {
+            String jsonMovieVideoResponse =
+                    NetworkUtils.getResponseFromHttpUrl(videoUrl);
+            videoList = getMovieVideoFromJson(jsonMovieVideoResponse);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        return videoList;
     }
 }

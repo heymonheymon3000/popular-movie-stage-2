@@ -22,4 +22,13 @@ public class Video {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "Video{" +
+                "id='" + id + '\'' +
+                ", key='" + key + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

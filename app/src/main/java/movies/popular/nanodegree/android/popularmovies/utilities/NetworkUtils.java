@@ -25,21 +25,14 @@ public final class NetworkUtils {
             "https://www.youtube.com/watch";
     private static final String YOUTUBE_KEY = "v";
 
-    public static URL buildYouTubeUrl(String key) {
+    public static Uri buildYouTubeUri(String key) {
         Uri builtUri;
-        URL url = null;
 
         builtUri = Uri.parse(YOUTUBE_BASE_URL).buildUpon()
                 .appendQueryParameter(YOUTUBE_KEY, key)
                 .build();
 
-        try {
-            url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return url;
+        return builtUri;
     }
 
     public static URL buildPopularMovieUrl() {
@@ -93,7 +86,7 @@ public final class NetworkUtils {
         return url;
     }
 
-    public static URL buildMovieVideosById(String id) {
+    public static URL buildMovieVideosByMovieId(String id) {
         Uri builtUri;
         URL url = null;
 
@@ -111,7 +104,7 @@ public final class NetworkUtils {
         return url;
     }
 
-    public static URL buildMovieReviewsById(String id) {
+    public static URL buildMovieReviewsByMovieId(String id) {
         Uri builtUri;
         URL url = null;
 

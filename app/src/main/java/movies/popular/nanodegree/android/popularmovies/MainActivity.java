@@ -128,8 +128,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public class FetchMovieData extends AsyncTask<String, Void, List<Movie>> {
-        private String activityTitle = "Popular Movies";
-
+        String activityTitle;
         @Override
         protected List<Movie> doInBackground(String... params) {
             URL movieRequestUrl;

@@ -3,8 +3,6 @@ package movies.popular.nanodegree.android.popularmovies.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.List;
-
 public class Movie implements Parcelable {
     private String id;
     private String title;
@@ -14,7 +12,8 @@ public class Movie implements Parcelable {
     private String releaseDate;
     private String runtime;
 
-    public Movie(String id, String title, String thumbnail, String overview, double voteAverage,
+    public Movie(String id, String title, String thumbnail,
+                 String overview, double voteAverage,
                  String releaseDate, String runtime) {
         this.id = id;
         this.title = title;
