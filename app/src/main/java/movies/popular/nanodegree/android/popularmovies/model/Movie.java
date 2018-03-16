@@ -91,4 +91,17 @@ public class Movie implements Parcelable {
             return new Movie[i];
         }
     };
+
+    @Override
+    public String toString() {
+        return "Movie{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", thumbnail='" + thumbnail + '\'' +
+                ", overview='" + overview + '\'' +
+                ", voteAverage=" + voteAverage +
+                ", releaseDate='" + releaseDate + '\'' +
+                ", runtime='" + runtime + '\'' +
+                '}';
+    }
 }

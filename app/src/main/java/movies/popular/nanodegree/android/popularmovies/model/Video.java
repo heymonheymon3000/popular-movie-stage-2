@@ -1,9 +1,9 @@
 package movies.popular.nanodegree.android.popularmovies.model;
 
 public class Video {
-    String id;
-    String key;
-    String name;
+    private String id;
+    private  String key;
+    private String name;
 
     public Video(String id, String key, String name) {
         this.id = id;

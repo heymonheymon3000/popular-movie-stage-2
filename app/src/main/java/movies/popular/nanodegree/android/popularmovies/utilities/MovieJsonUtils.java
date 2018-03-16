@@ -1,7 +1,6 @@
 package movies.popular.nanodegree.android.popularmovies.utilities;
 
 import android.net.Uri;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,8 +15,6 @@ import movies.popular.nanodegree.android.popularmovies.model.Review;
 import movies.popular.nanodegree.android.popularmovies.model.Video;
 
 public final class MovieJsonUtils {
-    private static final String TAG = MovieJsonUtils.class.getSimpleName();
-
     private static final String MOVIE_RESULTS = "results";
     private static final String POSTER_PATH = "poster_path";
     private static final String ID = "id";
@@ -124,35 +121,5 @@ public final class MovieJsonUtils {
         }
 
         return runtime;
-    }
-
-    private static List<Review> getMovieReviewListByMoveId(String id) {
-        List<Review> reviewList = new ArrayList<>();
-        URL reviewUrl = NetworkUtils.buildMovieReviewsByMovieId(id);
-
-        try {
-            String jsonMovieReviewResponse =
-                    NetworkUtils.getResponseFromHttpUrl(reviewUrl);
-            reviewList = getMovieReviewFromJson(jsonMovieReviewResponse);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        return reviewList;
-    }
-
-    private static List<Video> getMovieVideoListByMovieId(String id) {
-        List<Video> videoList = new ArrayList<>();
-        URL videoUrl = NetworkUtils.buildMovieVideosByMovieId(id);
-
-        try {
-            String jsonMovieVideoResponse =
-                    NetworkUtils.getResponseFromHttpUrl(videoUrl);
-            videoList = getMovieVideoFromJson(jsonMovieVideoResponse);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        return videoList;
     }
 }

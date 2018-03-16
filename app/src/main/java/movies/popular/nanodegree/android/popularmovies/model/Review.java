@@ -1,10 +1,9 @@
 package movies.popular.nanodegree.android.popularmovies.model;
 
-
 public class Review {
-    String id;
-    String author;
-    String content;
+    private String id;
+    private String author;
+    private String content;
 
     public Review(String id, String author, String content) {
         this.id = id;

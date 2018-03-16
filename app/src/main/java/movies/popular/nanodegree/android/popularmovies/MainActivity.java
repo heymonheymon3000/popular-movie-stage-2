@@ -28,10 +28,7 @@ import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 public class MainActivity extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         MovieAdapter.MovieAdapterOnClickListener {
-    private final String TAG = MainActivity.class.getSimpleName();
-
     private MovieAdapter mMovieAdapter;
-    private RecyclerView mRecyclerView;
     private SQLiteDatabase mDb;
 
     @Override
@@ -44,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements
         GridAutofitLayoutManager layoutManager =
                 new GridAutofitLayoutManager(this, 342);
 
-        mRecyclerView = findViewById(R.id.rv_movies);
+        RecyclerView mRecyclerView = findViewById(R.id.rv_movies);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mMovieAdapter);
         mRecyclerView.setLayoutManager(layoutManager);

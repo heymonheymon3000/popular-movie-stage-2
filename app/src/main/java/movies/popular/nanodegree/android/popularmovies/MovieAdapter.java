@@ -16,6 +16,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     private final Context mContext;
     final private MovieAdapterOnClickListener mClickHandler;
 
+    public interface MovieAdapterOnClickListener {
+        void onClick(Movie movie);
+    }
+
     public MovieAdapter(Context context,
                         MovieAdapterOnClickListener clickHandler) {
         this.mContext = context;
@@ -71,9 +75,5 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
             Movie movie = mMovieData.get(adapterPosition);
             mClickHandler.onClick(movie);
         }
-    }
-
-    public interface MovieAdapterOnClickListener {
-        void onClick(Movie movie);
     }
 }

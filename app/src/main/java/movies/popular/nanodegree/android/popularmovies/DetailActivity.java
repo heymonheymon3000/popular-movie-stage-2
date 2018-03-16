@@ -2,6 +2,7 @@ package movies.popular.nanodegree.android.popularmovies;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
@@ -29,7 +30,6 @@ import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 
 public class DetailActivity extends AppCompatActivity {
     private TextView title;
-    private ImageView thumbnail;
     private TextView overview;
     private TextView voteAverage;
     private TextView releaseDate;
@@ -37,7 +37,6 @@ public class DetailActivity extends AppCompatActivity {
     private SQLiteDatabase mDb;
     private String id;
     private String postPath;
-    private RecyclerView mRecyclerView;
     private TrailerAdapter mTrailerAdapter;
 
     @Override
@@ -49,7 +48,7 @@ public class DetailActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(this,
                         LinearLayoutManager.VERTICAL, false);
-        mRecyclerView = findViewById(R.id.rv_trailers);
+        RecyclerView mRecyclerView = findViewById(R.id.rv_trailers);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mTrailerAdapter);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -68,7 +67,7 @@ public class DetailActivity extends AppCompatActivity {
                 title.setText(movie.getTitle());
 
                 postPath = movie.getThumbnail();
-                thumbnail = findViewById(R.id.detail_movie_thumbnail);
+                ImageView thumbnail = findViewById(R.id.detail_movie_thumbnail);
                 Picasso.with(getBaseContext()).load(movie.getThumbnail()).into(thumbnail);
 
                 overview = findViewById(R.id.detail_movie_overview);
@@ -93,8 +92,30 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public void onClickMarkAsFavorite(View view) {
-        // TODO: Before adding movie make sure it does not already exist in the favorite db.
-        addNewFavoriteMovie();
+        if(!isFavoriteStoredAlready(id)) {
+            addNewFavoriteMovie();
+        } else {
+            Toast.makeText(DetailActivity.this,
+                    title.getText().toString() + " is already store as one of your favorite movies",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isFavoriteStoredAlready(String id) {
+        String selection = FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID + " = ?";
+        String[] selectionArgs = { id };
+
+        Cursor cursor = mDb.query(
+                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        return ( cursor.getCount() > 0 ) ;
     }
 
     private void addNewFavoriteMovie() {
@@ -117,7 +138,9 @@ public class DetailActivity extends AppCompatActivity {
             mDb.setTransactionSuccessful();
         }
         catch (SQLException e) {
-            //too bad :(
+            Toast.makeText(DetailActivity.this,
+                    "Unexpected error occurred saving favorite movie",
+                    Toast.LENGTH_SHORT).show();
         }
         finally {
             mDb.endTransaction();
