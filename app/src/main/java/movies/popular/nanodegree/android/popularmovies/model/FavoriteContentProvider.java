@@ -27,7 +27,9 @@ public class FavoriteContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection,
+                        @Nullable String selection, @Nullable String[] selectionArgs,
+                        @Nullable String sortOrder) {
         final SQLiteDatabase db = mFavoriteMovieDbHelper.getReadableDatabase();
         int match = sUriMatcher.match(uri);
         Cursor returnCursor;
@@ -58,7 +60,7 @@ public class FavoriteContentProvider extends ContentProvider {
                         sortOrder);
                 break;
             default:
-                throw new UnsupportedOperationException("Unknown uir " + uri);
+                throw new UnsupportedOperationException("Unknown uri " + uri);
         }
 
         returnCursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -80,9 +82,12 @@ public class FavoriteContentProvider extends ContentProvider {
         Uri returnUri;
         switch (match) {
             case FAVORITE_MOVIES:
-                long id = db.insert(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,null, values);
+                long id = db.insert(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
+                        null, values);
                 if(id > 0) {
-                    returnUri = ContentUris.withAppendedId(FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, id);
+                    returnUri =
+                            ContentUris.withAppendedId(
+                                    FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -97,19 +102,37 @@ public class FavoriteContentProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+    public int delete(@NonNull Uri uri, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
+        final SQLiteDatabase db = mFavoriteMovieDbHelper.getWritableDatabase();
+        int match = sUriMatcher.match(uri);
+        int returnId;
+        switch (match) {
+            case FAVORITE_MOVIE_WITH_ID:
+                String id = uri.getPathSegments().get(1);
+                String mSelection = FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID + " = ?";
+                String[] mSelectionArgs = new String[]{ id };
+                returnId = db.delete(FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME,
+                        mSelection, mSelectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uir " + uri);
+        }
+        return returnId;
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int update(@NonNull Uri uri, @Nullable ContentValues values,
+                      @Nullable String selection, @Nullable String[] selectionArgs) {
         return 0;
     }
 
     public static UriMatcher buildUriMatcher(){
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(FavoriteMovieContract.AUTHORITY, FavoriteMovieContract.PATH_FAVORITE_MOVIES, FAVORITE_MOVIES);
-        uriMatcher.addURI(FavoriteMovieContract.AUTHORITY, FavoriteMovieContract.PATH_FAVORITE_MOVIES+"/#", FAVORITE_MOVIE_WITH_ID);
+        uriMatcher.addURI(FavoriteMovieContract.AUTHORITY,
+                FavoriteMovieContract.PATH_FAVORITE_MOVIES, FAVORITE_MOVIES);
+        uriMatcher.addURI(FavoriteMovieContract.AUTHORITY,
+                FavoriteMovieContract.PATH_FAVORITE_MOVIES+"/#", FAVORITE_MOVIE_WITH_ID);
 
         return uriMatcher;
     }

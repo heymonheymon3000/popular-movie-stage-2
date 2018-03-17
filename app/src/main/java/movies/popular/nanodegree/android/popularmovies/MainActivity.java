@@ -3,7 +3,6 @@ package movies.popular.nanodegree.android.popularmovies;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
-import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieDbHelper;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
-import movies.popular.nanodegree.android.popularmovies.model.TestUtil;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
 import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 
@@ -30,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         MovieAdapter.MovieAdapterOnClickListener {
     private MovieAdapter mMovieAdapter;
-    private SQLiteDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +46,6 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-        FavoriteMovieDbHelper dbHelper = new FavoriteMovieDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
-        TestUtil.insertFakeData(mDb);
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
             loadMovieData();
@@ -162,13 +154,27 @@ public class MainActivity extends AppCompatActivity implements
             for(int i = 0; i < movieCursor.getCount(); i++) {
                 movieCursor.moveToPosition(i);
                 Movie movie = new Movie(
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID)),
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE)),
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL)),
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW)),
-                    movieCursor.getDouble(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE)),
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE)),
-                    movieCursor.getString(movieCursor.getColumnIndex(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME)));
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID)),
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE)),
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL)),
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW)),
+                    movieCursor.getDouble(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE)),
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE)),
+                    movieCursor.getString(
+                            movieCursor.getColumnIndex(
+                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME)));
                 movieList.add(movie);
             }
             return movieList;
@@ -195,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements
                 getSupportActionBar().setTitle(activityTitle);
             } else {
                 Toast.makeText(MainActivity.this,
-                        "Something went wrong, please check your internet connection and try again!",
-                        Toast.LENGTH_SHORT).show();
+                "Something went wrong, please check your internet connection and try again!",
+                Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -3,14 +3,17 @@ package movies.popular.nanodegree.android.popularmovies;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,9 +36,11 @@ public class DetailActivity extends AppCompatActivity {
     private TextView voteAverage;
     private TextView releaseDate;
     private TextView runtime;
+    private Button mFavoriteButton;
     private String id;
     private String postPath;
     private TrailerAdapter mTrailerAdapter;
+    private String sortOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +55,12 @@ public class DetailActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mTrailerAdapter);
         mRecyclerView.setLayoutManager(layoutManager);
+
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        sortOrder =
+                sharedPreferences.getString(getString(R.string.pref_sort_order_key),
+                        getString(R.string.pref_sort_order_default));
 
         Intent intent = getIntent();
         if(null != intent) {
@@ -76,6 +87,14 @@ public class DetailActivity extends AppCompatActivity {
 
                 runtime = findViewById(R.id.detail_movie_runtime);
                 runtime.setText(movie.getRuntime());
+
+                mFavoriteButton = findViewById(R.id.detail_movie_mark_as_favorite);
+                if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value)) ||
+                    sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
+                    mFavoriteButton.setText(R.string.action_favorite_movie);
+                } else {
+                    mFavoriteButton.setText(R.string.action_unfavorite_movie);
+                }
             }
         }
 
@@ -87,12 +106,21 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public void onClickAddFavoriteMovie(View view) {
-        if(!isFavoriteStoredAlready(id)) {
-            addNewFavoriteMovie();
+        if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value)) ||
+                sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
+            if(!isFavoriteStoredAlready(id)) {
+                addNewFavoriteMovie();
+            } else {
+                Toast.makeText(DetailActivity.this,
+                        title.getText().toString() + " is already store as one of your favorite movies",
+                        Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(DetailActivity.this,
-                    title.getText().toString() + " is already store as one of your favorite movies",
-                    Toast.LENGTH_SHORT).show();
+            removeNewFavoriteMovie();
+            // TODO: Need to trigger load movies again.
+
+
+            finish();
         }
     }
 
@@ -115,18 +143,29 @@ public class DetailActivity extends AppCompatActivity {
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID, id);
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE, title.getText().toString());
         cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL, postPath);
-        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW, overview.getText().toString());
-        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE, voteAverage.getText().toString());
-        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE, releaseDate.getText().toString());
-        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME, runtime.getText().toString());
+        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW,
+                overview.getText().toString());
+        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE,
+                voteAverage.getText().toString());
+        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE,
+                releaseDate.getText().toString());
+        cv.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME,
+                runtime.getText().toString());
 
-        Uri uri = getContentResolver().insert(FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, cv);
+        Uri uri =
+                getContentResolver().insert(FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, cv);
         if(uri != null) {
             Toast.makeText(DetailActivity.this,
                     "Added " + title.getText().toString() + " as one of your favorite movies.\n"+
                     uri.toString(),
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void removeNewFavoriteMovie() {
+        Uri uri = FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(id).build();
+        getContentResolver().delete(uri, null, null);
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -158,8 +197,8 @@ public class DetailActivity extends AppCompatActivity {
                 mTrailerAdapter.setVideoData(videos);
             } else {
                 Toast.makeText(DetailActivity.this,
-                        "Something went wrong, please check your internet connection and try again!",
-                        Toast.LENGTH_SHORT).show();
+                "Something went wrong, please check your internet connection and try again!",
+                Toast.LENGTH_SHORT).show();
             }
         }
     }

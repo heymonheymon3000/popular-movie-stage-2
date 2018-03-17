@@ -15,16 +15,26 @@ public class FavoriteMovieDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        final String SQL_CREATE_FAVORITE_MOVIE_TABLE = "CREATE TABLE " + FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME + " (" +
-                FavoriteMovieContract.FavoriteMovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID + " INTEGER NOT NULL," +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME + " TEXT NOT NULL, " +
-                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+        final String SQL_CREATE_FAVORITE_MOVIE_TABLE = "CREATE TABLE " +
+                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME + " (" +
+                FavoriteMovieContract.FavoriteMovieEntry._ID +
+                " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID +
+                " INTEGER NOT NULL," +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME +
+                " TEXT NOT NULL, " +
+                FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TIMESTAMP +
+                " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 "); ";
 
         sqLiteDatabase.execSQL(SQL_CREATE_FAVORITE_MOVIE_TABLE);
@@ -32,7 +42,8 @@ public class FavoriteMovieDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " +
+                FavoriteMovieContract.FavoriteMovieEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }
