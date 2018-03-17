@@ -3,12 +3,15 @@ package movies.popular.nanodegree.android.popularmovies;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +30,10 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         MovieAdapter.MovieAdapterOnClickListener {
     private MovieAdapter mMovieAdapter;
+    private RecyclerView mRecyclerView;
+    private ItemTouchHelper itemTouchHelper;
+
+    private final static String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +45,38 @@ public class MainActivity extends AppCompatActivity implements
         GridAutofitLayoutManager layoutManager =
                 new GridAutofitLayoutManager(this, 342);
 
-        RecyclerView mRecyclerView = findViewById(R.id.rv_movies);
+        mRecyclerView = findViewById(R.id.rv_movies);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setAdapter(mMovieAdapter);
         mRecyclerView.setLayoutManager(layoutManager);
 
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
+        String sortOrder =
+                sharedPreferences.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_default));
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT |
+                ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView,
+                                  RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                String id = (String) viewHolder.itemView.getTag();
+                Uri uri = FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI;
+                uri = uri.buildUpon().appendPath(id).build();
+                getContentResolver().delete(uri, null, null);
+                new FetchMovieData().execute();
+            }
+        });
+
+        if(sortOrder.equals(getString(R.string.pref_sort_order_favorites_value))) {
+            itemTouchHelper.attachToRecyclerView(mRecyclerView);
+        }
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
             loadMovieData();
@@ -95,6 +126,17 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(getString(R.string.pref_sort_order_key))) {
+
+            String sortOrder =
+                    sharedPreferences.getString(getString(R.string.pref_sort_order_key),
+                            getString(R.string.pref_sort_order_default));
+
+            if(sortOrder.equals(getString(R.string.pref_sort_order_favorites_value))) {
+                itemTouchHelper.attachToRecyclerView(mRecyclerView);
+            } else {
+                itemTouchHelper.attachToRecyclerView(null);
+            }
+
             loadMovieData();
         }
     }
