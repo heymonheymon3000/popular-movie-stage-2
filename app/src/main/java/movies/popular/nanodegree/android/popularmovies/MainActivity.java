@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,6 +22,7 @@ import java.util.List;
 
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
+import movies.popular.nanodegree.android.popularmovies.model.PopularMoviePreferences;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
 import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this);
         String sortOrder =
-                sharedPreferences.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_default));
+                PopularMoviePreferences.getSortOrder(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT |
@@ -168,10 +168,8 @@ public class MainActivity extends AppCompatActivity implements
         protected List<Movie> doInBackground(String... params) {
             URL movieRequestUrl;
             List<Movie> movieList;
-            SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(getBaseContext());
             String sortOrder =
-                    sharedPreferences.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_default));
+                    PopularMoviePreferences.getSortOrder(getBaseContext());
 
             if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value))) {
                 activityTitle = "Popular Movies";

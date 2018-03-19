@@ -1,6 +1,7 @@
 package movies.popular.nanodegree.android.popularmovies;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +27,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         this.mClickHandler = clickHandler;
     }
 
+    @NonNull
     @Override
-    public MovieAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public MovieAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
         int layoutIdForListItem = R.layout.movie_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -40,7 +42,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     }
 
     @Override
-    public void onBindViewHolder(MovieAdapterViewHolder movieAdapterViewHolder, int position) {
+    public void onBindViewHolder(@NonNull MovieAdapterViewHolder movieAdapterViewHolder, int position) {
         Movie movieImagePath = mMovieData.get(position);
         movieAdapterViewHolder.itemView.setTag(movieImagePath.getId());
         Picasso.with(mContext).load(movieImagePath.getThumbnail())

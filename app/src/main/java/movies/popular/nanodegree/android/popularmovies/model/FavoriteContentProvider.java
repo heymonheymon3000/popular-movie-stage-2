@@ -11,12 +11,13 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+@SuppressWarnings("ConstantConditions")
 public class FavoriteContentProvider extends ContentProvider {
 
     private FavoriteMovieDbHelper mFavoriteMovieDbHelper;
     private final static int FAVORITE_MOVIES = 100;
     private final static int FAVORITE_MOVIE_WITH_ID = 101;
-    private static final UriMatcher sUriMatcher =buildUriMatcher();
+    private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     @Override
     public boolean onCreate() {
