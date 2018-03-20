@@ -18,4 +18,5 @@
     <string name="thumbnail_content_description" translatable="false">This is the thumbnail of the movie</string>
     <string name="action_favorite_movie">MARK AS\n FAVORITE</string>
     <string name="trailers_label">Trailers:</string>
+    <string name="reviews_label">Reviews:</string>
 </resources>

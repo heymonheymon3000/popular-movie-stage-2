@@ -23,6 +23,7 @@ import java.util.List;
 
 import movies.popular.nanodegree.android.popularmovies.model.FavoriteMovieContract;
 import movies.popular.nanodegree.android.popularmovies.model.Movie;
+import movies.popular.nanodegree.android.popularmovies.model.Review;
 import movies.popular.nanodegree.android.popularmovies.model.Video;
 import movies.popular.nanodegree.android.popularmovies.utilities.MovieJsonUtils;
 import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
@@ -36,6 +37,7 @@ public class DetailActivity extends AppCompatActivity {
     private String id;
     private String postPath;
     private TrailerAdapter mTrailerAdapter;
+    private ReviewAdapter mReviewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +45,18 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         mTrailerAdapter = new TrailerAdapter(this);
-        LinearLayoutManager layoutManager =
-                new LinearLayoutManager(this,
-                        LinearLayoutManager.VERTICAL, false);
-        RecyclerView mRecyclerView = findViewById(R.id.rv_trailers);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setAdapter(mTrailerAdapter);
-        mRecyclerView.setLayoutManager(layoutManager);
+        RecyclerView mTrailersRecyclerView = findViewById(R.id.rv_trailers);
+        mTrailersRecyclerView.setHasFixedSize(true);
+        mTrailersRecyclerView.setAdapter(mTrailerAdapter);
+        mTrailersRecyclerView.setLayoutManager(new LinearLayoutManager(this,
+                LinearLayoutManager.VERTICAL, false));
+
+        mReviewAdapter = new ReviewAdapter(this);
+        RecyclerView mReviewsRecyclerView = findViewById(R.id.rv_reviews);
+        mReviewsRecyclerView.setHasFixedSize(true);
+        mReviewsRecyclerView.setAdapter(mReviewAdapter);
+        mReviewsRecyclerView.setLayoutManager(new LinearLayoutManager(this,
+                LinearLayoutManager.VERTICAL, false));
 
         Intent intent = getIntent();
         if(null != intent) {
@@ -80,8 +87,11 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         loadTrailers();
+        loadReviews();
+
     }
 
+    private void loadReviews() { new FetchReviews().execute(); }
     private void loadTrailers() {
         new FetchTrailers().execute();
     }
@@ -165,6 +175,41 @@ public class DetailActivity extends AppCompatActivity {
                 Toast.makeText(DetailActivity.this,
                 "Something went wrong, please check your internet connection and try again!",
                 Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public class FetchReviews extends AsyncTask<Void, Void, List<Review>> {
+        @Override
+        protected List<Review> doInBackground(Void... voids) {
+            URL reviewRequestUrl =
+                    NetworkUtils.buildMovieReviewsByMovieId(id);
+            return getReviewListFromUrl(reviewRequestUrl);
+        }
+
+        private List<Review> getReviewListFromUrl(URL reviewRequestUrl) {
+            List<Review> reviewList = new ArrayList<>();
+            try {
+                String jsonReviewResponse = NetworkUtils
+                        .getResponseFromHttpUrl(reviewRequestUrl);
+
+                reviewList = MovieJsonUtils.getMovieReviewFromJson(jsonReviewResponse);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
+            return reviewList;
+        }
+
+        @Override
+        protected void onPostExecute(List<Review> reviews) {
+            if(reviews != null) {
+                mReviewAdapter.setReviewData(reviews);
+            } else {
+                Toast.makeText(DetailActivity.this,
+                        "Something went wrong, please check your internet connection and try again!",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }

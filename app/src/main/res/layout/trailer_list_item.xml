@@ -35,7 +35,6 @@
         android:orientation="vertical">
 
         <View style="@style/Divider"/>
-
     </LinearLayout>
 
 </LinearLayout>
