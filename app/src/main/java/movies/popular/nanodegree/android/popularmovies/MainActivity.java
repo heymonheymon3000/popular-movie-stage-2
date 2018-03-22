@@ -1,11 +1,17 @@
 package movies.popular.nanodegree.android.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
+
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.preference.PreferenceManager;
@@ -28,10 +34,13 @@ import movies.popular.nanodegree.android.popularmovies.utilities.NetworkUtils;
 
 public class MainActivity extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
-        MovieAdapter.MovieAdapterOnClickListener {
+        MovieAdapter.MovieAdapterOnClickListener, LoaderManager.LoaderCallbacks<List<Movie>> {
     private MovieAdapter mMovieAdapter;
     private RecyclerView mRecyclerView;
     private ItemTouchHelper itemTouchHelper;
+    private String activityTitle;
+
+    private final static int POPULAR_MOVIES_LOADER = 22;
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -70,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements
                 Uri uri = FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI;
                 uri = uri.buildUpon().appendPath(id).build();
                 getContentResolver().delete(uri, null, null);
-                new FetchMovieData().execute();
+                loadMovieData();
             }
         });
 
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies")) {
-            loadMovieData();
+          loadMovieData();
         } else {
             ArrayList<Movie> movieArrayList = savedInstanceState.getParcelableArrayList("movies");
             mMovieAdapter.setMovieData(movieArrayList);
@@ -120,13 +129,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void loadMovieData() {
-        new FetchMovieData().execute();
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<List<Movie>> movieLoader = loaderManager.getLoader(POPULAR_MOVIES_LOADER);
+        if(movieLoader == null) {
+            loaderManager.initLoader(POPULAR_MOVIES_LOADER, null, MainActivity.this);
+        } else {
+            loaderManager.restartLoader(POPULAR_MOVIES_LOADER,null, MainActivity.this );
+        }
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(getString(R.string.pref_sort_order_key))) {
-
             String sortOrder =
                     sharedPreferences.getString(getString(R.string.pref_sort_order_key),
                             getString(R.string.pref_sort_order_default));
@@ -162,88 +176,112 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public class FetchMovieData extends AsyncTask<String, Void, List<Movie>> {
-        String activityTitle;
-        @Override
-        protected List<Movie> doInBackground(String... params) {
-            URL movieRequestUrl;
-            List<Movie> movieList;
-            String sortOrder =
-                    PopularMoviePreferences.getSortOrder(getBaseContext());
+    @SuppressLint("StaticFieldLeak")
+    @NonNull
+    @Override
+    public Loader<List<Movie>> onCreateLoader(int id, @Nullable final Bundle args) {
+        return new AsyncTaskLoader<List<Movie>>(this) {
+            List<Movie> movieList = null;
 
-            if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value))) {
-                activityTitle = "Popular Movies";
-                movieRequestUrl = NetworkUtils.buildPopularMovieUrl();
-                movieList = getMovieListFromUrl(movieRequestUrl);
-            } else if(sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
-                activityTitle = "Top Rated Movies";
-                movieRequestUrl = NetworkUtils.buildTopRatedMovieUrl();
-                movieList = getMovieListFromUrl(movieRequestUrl);
-            } else {
-                activityTitle = "Favorite Movies";
-                Cursor movieCursor = getAllFavoriteMovies();
-                movieList = getMovieListFromCursor(movieCursor);
+            @Override
+            protected void onStartLoading() {
+                if(movieList != null) {
+                    deliverResult(movieList);
+                } else {
+                    forceLoad();
+                }
             }
 
-            return movieList;
-        }
-
-        private List<Movie> getMovieListFromCursor(Cursor movieCursor) {
-            List<Movie> movieList = new ArrayList<>();
-
-            for(int i = 0; i < movieCursor.getCount(); i++) {
-                movieCursor.moveToPosition(i);
-                Movie movie = new Movie(
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID)),
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE)),
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL)),
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW)),
-                    movieCursor.getDouble(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE)),
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE)),
-                    movieCursor.getString(
-                            movieCursor.getColumnIndex(
-                                    FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME)));
-                movieList.add(movie);
-            }
-            return movieList;
-        }
-
-        private List<Movie> getMovieListFromUrl(URL movieRequestUrl) {
-            List<Movie> movieList = new ArrayList<>();
-            try {
-                String jsonMovieResponse = NetworkUtils
-                        .getResponseFromHttpUrl(movieRequestUrl);
-
-                movieList = MovieJsonUtils.getSimpleMovieStringsFromJson(jsonMovieResponse);
-            } catch(Exception e) {
-                e.printStackTrace();
+            public void deliverResult(List<Movie>  data) {
+                movieList = data;
+                super.deliverResult(data);
             }
 
-            return movieList;
-        }
+            @Nullable
+            @Override
+            public List<Movie> loadInBackground() {
+                URL movieRequestUrl;
 
-        @Override
-        protected void onPostExecute(List<Movie> movieData) {
-            if (movieData != null) {
-                mMovieAdapter.setMovieData(movieData);
-                getSupportActionBar().setTitle(activityTitle);
-            } else {
-                Toast.makeText(MainActivity.this,
-                "Something went wrong, please check your internet connection and try again!",
-                Toast.LENGTH_SHORT).show();
+                String sortOrder =
+                        PopularMoviePreferences.getSortOrder(getBaseContext());
+
+                if(sortOrder.equals(getString(R.string.pref_sort_order_popular_value))) {
+                    activityTitle = "Popular Movies";
+                    movieRequestUrl = NetworkUtils.buildPopularMovieUrl();
+                    movieList = getMovieListFromUrl(movieRequestUrl);
+                } else if(sortOrder.equals(getString(R.string.pref_sort_order_top_rated_value))) {
+                    activityTitle = "Top Rated Movies";
+                    movieRequestUrl = NetworkUtils.buildTopRatedMovieUrl();
+                    movieList = getMovieListFromUrl(movieRequestUrl);
+                } else {
+                    activityTitle = "Favorite Movies";
+                    Cursor movieCursor = getAllFavoriteMovies();
+                    movieList = getMovieListFromCursor(movieCursor);
+                }
+
+                return movieList;
             }
+
+            private List<Movie> getMovieListFromCursor(Cursor movieCursor) {
+                List<Movie> movieList = new ArrayList<>();
+
+                for(int i = 0; i < movieCursor.getCount(); i++) {
+                    movieCursor.moveToPosition(i);
+                    Movie movie = new Movie(
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_ID)),
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_TITLE)),
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_THUMBNAIL)),
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_OVERVIEW)),
+                            movieCursor.getDouble(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_VOTE_AVERAGE)),
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RELEASE_DATE)),
+                            movieCursor.getString(
+                                    movieCursor.getColumnIndex(
+                                            FavoriteMovieContract.FavoriteMovieEntry.COLUMN_RUNTIME)));
+                    movieList.add(movie);
+                }
+                return movieList;
+            }
+
+            private List<Movie> getMovieListFromUrl(URL movieRequestUrl) {
+                List<Movie> movieList = new ArrayList<>();
+                try {
+                    String jsonMovieResponse = NetworkUtils
+                            .getResponseFromHttpUrl(movieRequestUrl);
+
+                    movieList = MovieJsonUtils.getSimpleMovieStringsFromJson(jsonMovieResponse);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+
+                return movieList;
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<List<Movie>> loader, List<Movie> data) {
+        if (data != null) {
+            mMovieAdapter.setMovieData(data);
+            getSupportActionBar().setTitle(activityTitle);
+        } else {
+            Toast.makeText(MainActivity.this,
+                    "Something went wrong, please check your internet connection and try again!",
+                    Toast.LENGTH_SHORT).show();
         }
     }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<List<Movie>> loader) {}
 }
